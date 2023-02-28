@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: git-pod
+  namespace: git
+  labels:
+    environment: production
+    app: checkout-data
+spec:
+  containers:
+  - name: git-checkout
+    image: sashosot/gitdownloader:1.0
+    command: 
+      - bash
+      - -c
+      - |
+        [ "$(ls -A /data)" ] && rm -rf /data/{*,.*}        
+        git clone https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/bosch-ecs-career-camp/${GITHUB_REPOSITORY}.git /data                 
+    envFrom:    
+    - secretRef:    
+        name: github-secret        
+    env:
+    - name: GITHUB_REPOSITORY
+      value: devops-exam-module-1-sashosotirov      
+    volumeMounts:
+    - mountPath: /data
+      name: data-hw2  
+
+  imagePullSecrets:
+  - name: dockerlogin
+  
+  volumes:
+  - name: data-hw2
+    azureFile:
+      secretName: azure-secret
+      shareName: stream4-share
+      readOnly: false
+
+  restartPolicy: Never
+
+  
+    
+

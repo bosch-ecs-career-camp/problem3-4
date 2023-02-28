@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: exec-pod
+  namespace: executor
+  labels:
+    environment: production
+    app: executor
+spec:
+  containers: 
+  - name: executor
+    image: sashosot/executor:1.0
+    command:
+      - bash
+      - -c
+      - |                 
+        cd /data
+        ./user_list_update.bash $NAME $SURNAME $REGION 
+        ls -al
+        cat user_db.csv      
+    envFrom:  
+      - configMapRef:  
+          name: input-data      
+    volumeMounts:
+      - mountPath: /data
+        name: data-hw2
+
+  imagePullSecrets:
+  - name: dockerlogin
+  
+  volumes:
+  - name: data-hw2
+    azureFile:
+      secretName: azure-secret
+      shareName: stream4-share
+      readOnly: false
+
+  restartPolicy: Never
+
+  
+    
+
